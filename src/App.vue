@@ -1,5 +1,44 @@
+<script setup>
+// State
+import { ref } from 'vue';
+
+const myData = ref(null);
+const usersName = ref('');
+const usersEmail = ref('');
+const userArray = ref([]);
+
+  function fetchMyData(){
+    fetch("https://mahauser2.github.io/productsDummyJson/products.json")
+    .then(res => res.json())
+    .then(data => {
+      myData.value = data;
+    })
+    .catch(err => console.log(err));
+  }
+
+  function submitForm() {
+    alert('Du er nu tilmeldt!');
+
+    const newUser = {
+      name: usersName.value,
+      email: usersEmail.value
+    };
+
+    userArray.value.push(newUser);
+
+    usersName.value = '';
+    usersEmail.value = '';
+
+    console.log(userArray.value);
+  }
+
+  fetchMyData();
+</script>
+
+
 <template>
   <!-- 1: Start out by fetching the products from https://mahauser2.github.io/productsDummyJson/products.json - store the fetched data in state  -->
+
 
   <!-- 2: Make the .card (the div further down) dynamic - we need one card for each object in the products array -->
 
@@ -25,44 +64,40 @@
   <!-- 8: When the user has entered a username and an email (he has submitted the form), alert the user something like this: https://mmd.ucn.dk/lecturer/mfw/assets/img/vue-binding-example1.png also add the user to the users array in reactive data -->
 
   <h1 class="main-title">A great webshop</h1>
-
   <div class="newsletter center">
     <p>Sign up for our newsletter here!</p>
-    <form>
+    <form @submit.prevent="submitForm">
       <div>
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" placeholder="Username:" required />
+        <input type="text" id="username" name="username" placeholder="Username:" v-model="usersName" required />
       </div>
       <div>
         <label for="email">email:</label>
-        <input type="email" id="email" name="email" placeholder="Email:" required />
+        <input type="email" id="email" name="email" placeholder="Email:" v-model="usersEmail" required />
       </div>
-      <button>Sign Up</button>
+      <button type="submit">Sign Up</button>
     </form>
   </div>
   <div class="product-wrapper center">
-    <div class="card">
+    <div v-for="product in myData" :key="myData.id" class="card">
+      <span v-if="product.category == 'electronics'" class="rotate">On Sale</span>
       <div class="product">
         <div class="product-image">
-          <img src="https://raw.githubusercontent.com/mahaUser2/productsDummyJson/main/81fPKd-2AYL._AC_SL1500_.jpg" alt="Some bag" />
+          <img :src="product.image" :alt="product.alt" />
         </div>
         <div class="product-info">
           <header>
-            <h3>Taske</h3>
-            <p class="price">2000000kr</p>
-            <p class="category">Taske</p>
+            <h3 :class="{ featured: product.category === 'electronics' }">Taske</h3>
+            <p class="price">{{ product.price }} kr</p>
+            <p class="category">{{ product.category }}</p>
           </header>
-          <p class="description">Her er en taske</p>
-          <p class="stock">In stock: 300</p>
+          <p class="description">{{product.description}}</p>
+          <p :class="{ red: product.rating.count < 100 }, { green: product.rating.count > 300 }" class="stock">In stock: {{ product.rating.count }}</p>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-// State
-</script>
 
 <style scoped>
 .center {
